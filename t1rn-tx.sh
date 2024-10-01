@@ -42,15 +42,6 @@ pip install -r "$WORKSPACE_DIR/requirements.txt"
 echo -e "${YELLOW}개인 키를 입력하세요 (쉼표로 구분):${NC}"
 read -r private_keys
 
-# 개인 키 유효성 검증
-IFS=',' read -r -a keys_array <<< "$private_keys"
-for key in "${keys_array[@]}"; do
-    if [[ ! "$key" =~ ^0x[a-fA-F0-9]{64}$ ]]; then
-        echo -e "${RED}잘못된 개인 키 형식입니다: $key${NC}"
-        exit 1
-    fi
-done
-
 # 트랜잭션 수 입력 받기
 echo -e "${YELLOW}각 개인 키에 대해 보낼 트랜잭션 수를 입력하세요:${NC}"
 read -r num_transactions
