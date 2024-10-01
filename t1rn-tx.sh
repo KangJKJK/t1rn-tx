@@ -96,16 +96,6 @@ chain_id = 421614  # Arbitrum Sepolia 체인 ID
 # 계약에 거래를 보내는 함수
 def send_transaction(amount):
     nonce = w3.eth.getTransactionCount(account.address)
-
-    # 가스 한계 동적 추정
-    estimated_gas = w3.eth.estimateGas({
-        'to': contract_address,
-        'data': input_data,
-        'value': w3.to_wei(amount, 'ether'),
-        'nonce': nonce,
-        'chainId': chain_id
-    })
-
     transaction = {
         'to': contract_address,
         'data': input_data,
