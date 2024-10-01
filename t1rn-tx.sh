@@ -34,6 +34,18 @@ if ! command -v pip &> /dev/null; then
     exit 1
 fi
 
+# Python과 pip 설치 확인 및 설치
+if ! command -v python3 &> /dev/null; then
+    echo -e "${RED}Python이 설치되어 있지 않습니다. 설치합니다...${NC}"
+    apt-get update
+    apt-get install -y python3
+fi
+
+if ! command -v pip &> /dev/null; then
+    echo -e "${RED}pip가 설치되어 있지 않습니다. 설치합니다...${NC}"
+    apt-get install -y python3-pip
+fi
+
 # 필요한 패키지 설치
 echo -e "${GREEN}필요한 패키지를 설치합니다...${NC}"
 pip install -r "$WORKSPACE_DIR/requirements.txt"
