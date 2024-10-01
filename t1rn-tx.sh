@@ -131,6 +131,9 @@ for i in range(num_transactions):
         print(f'거래 전송 중 오류 발생: {e}')
 EOF
 
+# 작업 공간으로 이동
+cd "$WORKSPACE_DIR"
+
 # 개인 키에 대해 t1rn_tx.py 실행
 for index in "${!keys_array[@]}"; do
     private_key="${keys_array[$index]}"
