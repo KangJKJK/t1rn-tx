@@ -75,7 +75,7 @@ import sys
 import time
 
 # Arbitrum Sepolia 노드에 연결
-w3 = Web3(Web3.HTTPProvider('https://sepolia.arbitrum.io/rpc'))
+w3 = Web3(Web3.HTTPProvider('https://sepolia-rollup.arbitrum.io/rpc'))
 
 # 연결 확인
 if not w3.is_connected():
