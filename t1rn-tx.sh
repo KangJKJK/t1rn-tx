@@ -53,24 +53,19 @@ echo -e "${GREEN}필요한 패키지를 설치합니다...${NC}"
 pip install -r "$WORKSPACE_DIR/requirements.txt"
 
 # 개인 키 입력 받기
-echo -e "${YELLOW}개인 키를 입력하세요 (쉼표로 구분):${NC}"
+echo -e "${YELLOW}개인키를 입력하세요 (쉼표로 구분):${NC}"
 read -r private_keys
 
 # 트랜잭션 수 입력 받기
 echo -e "${YELLOW}각 개인 키에 대해 보낼 트랜잭션 수를 입력하세요:${NC}"
 read -r num_transactions
 
-# 트랜잭션 수 유효성 검증
-if ! [[ "$num_transactions" =~ ^[0-9]+$ ]] || [ "$num_transactions" -le 0 ]; then
-    echo -e "${RED}잘못된 트랜잭션 수입니다. 양수를 입력하세요.${NC}"
-    exit 1
-fi
-
 # 개인 키를 privatekey.txt 파일에 저장
 echo -e "${GREEN}개인 키를 ${WORKSPACE_DIR}/privatekey.txt 파일에 저장합니다...${NC}"
 echo "$private_keys" > "$WORKSPACE_DIR/privatekey.txt"
 
 # t1rn_tx.py 파일 생성
+echo -e "${GREEN}t1rn.tx.py 파일을 생성합니다...${NC}"
 cat << 'EOF' > "$WORKSPACE_DIR/t1rn_tx.py"
 from web3 import Web3
 import sys
@@ -137,9 +132,11 @@ for i in range(num_transactions):
 EOF
 
 # 작업 공간으로 이동
+echo -e "작업공간을 이동합니다...${NC}"
 cd "$WORKSPACE_DIR"
 
 # 개인 키에 대해 t1rn_tx.py 실행
+echo -e "t1rn_tx.py를 실행합니다...${NC}"
 for index in "${!keys_array[@]}"; do
     private_key="${keys_array[$index]}"
     echo -e "${GREEN}현재 사용 중인 지갑: $(($index + 1))${NC}"
