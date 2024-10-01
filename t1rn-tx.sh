@@ -78,7 +78,7 @@ import time
 w3 = Web3(Web3.HTTPProvider('https://sepolia.arbitrum.io/rpc'))
 
 # 연결 확인
-if not w3.isConnected():
+if not w3.is_Connected():
     raise Exception("Arbitrum Sepolia 노드에 연결할 수 없습니다.")
 
 # 계정 설정
