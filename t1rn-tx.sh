@@ -27,6 +27,10 @@ pip install web3
 echo -e "${YELLOW}개인 키를 입력하세요 (쉼표로 구분):${NC}"
 read -r private_keys
 
+# 트랜잭션 수 입력 받기
+echo -e "${YELLOW}각 개인 키에 대해 보낼 트랜잭션 수를 입력하세요:${NC}"
+read -r num_transactions
+
 # 개인 키를 privatekey.txt 파일에 저장
 echo -e "${GREEN}개인 키를 ${WORKSPACE_DIR}/privatekey.txt 파일에 저장합니다...${NC}"
 echo "$private_keys" > "$WORKSPACE_DIR/privatekey.txt"
@@ -74,7 +78,7 @@ def send_transaction(amount):
     return txn_hash
 
 # 반복적으로 거래 전송
-num_transactions = 10  # 전송할 거래 수 변경
+num_transactions = int(sys.argv[2])  # 명령행 인수로 거래 수 입력
 amount_per_transaction = 0.0001  # ETH 단위의 금액
 
 for i in range(num_transactions):
@@ -88,8 +92,8 @@ for index in "${!keys_array[@]}"; do
     private_key="${keys_array[$index]}"
     echo -e "${GREEN}현재 사용 중인 지갑: $(($index + 1))${NC}"
     
-    # 스크립트 실행 (명령행 인수로 개인 키 전달)
-    python3 "$WORKSPACE_DIR/t1rn_tx.py" "$private_key"
+    # 스크립트 실행 (명령행 인수로 개인 키 및 트랜잭션 수 전달)
+    python3 "$WORKSPACE_DIR/t1rn_tx.py" "$private_key" "$num_transactions"
 done
 
 echo -e "${GREEN}모든 작업이 완료되었습니다. 컨트롤+A+D로 스크린을 종료해주세요.${NC}"
