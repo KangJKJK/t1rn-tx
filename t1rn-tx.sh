@@ -56,6 +56,9 @@ pip install -r "$WORKSPACE_DIR/requirements.txt"
 echo -e "${YELLOW}개인키를 입력하세요 (쉼표로 구분):${NC}"
 read -r private_keys
 
+# 개인 키를 쉼표로 나누어 배열로 변환
+IFS=',' read -r -a keys_array <<< "$private_keys"
+
 # 트랜잭션 수 입력 받기
 echo -e "${YELLOW}각 개인 키에 대해 보낼 트랜잭션 수를 입력하세요:${NC}"
 read -r num_transactions
@@ -65,7 +68,7 @@ echo -e "${GREEN}개인 키를 ${WORKSPACE_DIR}/privatekey.txt 파일에 저장�
 echo "$private_keys" > "$WORKSPACE_DIR/privatekey.txt"
 
 # t1rn_tx.py 파일 생성
-echo -e "${GREEN}t1rn.tx.py 파일을 생성합니다...${NC}"
+echo -e "${GREEN}t1rn_tx.py 파일을 생성합니다...${NC}"
 cat << 'EOF' > "$WORKSPACE_DIR/t1rn_tx.py"
 from web3 import Web3
 import sys
@@ -118,17 +121,18 @@ def send_transaction(amount):
     return txn_hash
 
 # 반복적으로 거래 전송
-num_transactions = int(sys.argv[2])  # 명령행 인수로 거래 수 입력
-amount_per_transaction = 0.0001  # ETH 단위의 금액
+try:
+    num_transactions = int(sys.argv[2])  # 명령행 인수로 거래 수 입력
+    amount_per_transaction = 0.0001  # ETH 단위의 금액
 
-for i in range(num_transactions):
-    try:
+    for i in range(num_transactions):
         start_time = time.time()  # 시작 시간 기록
         txn_hash = send_transaction(amount_per_transaction)
         elapsed_time = time.time() - start_time  # 경과 시간 계산
         print(f'거래 해시: {txn_hash.hex()} (소요 시간: {elapsed_time:.2f}초)')
-    except Exception as e:
-        print(f'거래 전송 중 오류 발생: {e}')
+except Exception as e:
+    print(f'거래 전송 중 오류 발생: {e}')
+    sys.exit(1)  # 오류 발생 시 종료
 EOF
 
 # 작업 공간으로 이동
@@ -142,8 +146,13 @@ for index in "${!keys_array[@]}"; do
     echo -e "${GREEN}현재 사용 중인 지갑: $(($index + 1))${NC}"
     
     # 스크립트 실행 (명령행 인수로 개인 키 및 트랜잭션 수 전달)
-    python3 "$WORKSPACE_DIR/t1rn_tx.py" "$private_key" "$num_transactions"
+    if python3 "$WORKSPACE_DIR/t1rn_tx.py" "$private_key" "$num_transactions"; then
+        echo -e "${GREEN}트랜잭션이 성공적으로 전송되었습니다.${NC}"
+    else
+        echo -e "${RED}트랜잭션 전송 중 오류 발생. 개인 키: $private_key${NC}"
+    fi
 done
+
 
 echo -e "${GREEN}모든 작업이 완료되었습니다. 컨트롤+A+D로 스크린을 종료해주세요.${NC}"
 echo -e "${GREEN}스크립트 작성자: https://t.me/kjkresearch${NC}"
