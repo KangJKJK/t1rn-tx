@@ -6,92 +6,90 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # 색상 초기화
 
-# 변수 정의
-PACKAGE_NAME="titan-edge_v0.1.20_246b9dd_linux-amd64.tar.gz"
-DIR_NAME="titan-edge_v0.1.20_246b9dd_linux-amd64"
+# 작업 공간 디렉토리 설정
+WORKSPACE_DIR="/root/t1rntx"
 
-# 1. 기존 패키지 삭제
-if [ -f "$PACKAGE_NAME" ]; then
-    echo -e "${YELLOW}기존 패키지를 삭제합니다...${NC}"
-    rm -f "$PACKAGE_NAME"
+# 기존 디렉토리 삭제 (존재하는 경우)
+if [ -d "$WORKSPACE_DIR" ]; then
+    echo -e "${YELLOW}기존 작업 공간을 삭제합니다...${NC}"
+    rm -rf "$WORKSPACE_DIR"
 fi
 
-# 2. 패키지 다운로드
-echo -e "${YELLOW}패키지를 다운로드합니다...${NC}"
-wget https://github.com/Titannet-dao/titan-node/releases/download/v0.1.20/titan-edge_v0.1.20_246b9dd_linux-amd64.tar.gz
+# 새로운 작업 공간 디렉토리 생성
+echo -e "${GREEN}새로운 작업 공간을 생성합니다...${NC}"
+mkdir -p "$WORKSPACE_DIR"
 
-# 3. 다운로드한 파일 압축 해제
-echo -e "${YELLOW}패키지를 추출합니다...${NC}"
-tar -xzvf "$PACKAGE_NAME"
+# 필요한 패키지 설치
+echo -e "${GREEN}필요한 패키지를 설치합니다...${NC}"
+pip install web3
 
-# 4. 작업 폴더로 이동
-cd "$DIR_NAME" || { echo -e "${RED}디렉토리로 이동 실패${NC}"; exit 1; }
+# 개인 키 입력 받기
+echo -e "${YELLOW}개인 키를 입력하세요 (쉼표로 구분):${NC}"
+read -r private_keys
 
-# 5. 권한 설정 및 파일 복사
-echo -e "${YELLOW}파일을 복사합니다...${NC}"
-sudo cp titan-edge /usr/local/bin
-sudo cp libgoworkerd.so /usr/local/lib
+# 개인 키를 privatekey.txt 파일에 저장
+echo -e "${GREEN}개인 키를 ${WORKSPACE_DIR}/privatekey.txt 파일에 저장합니다...${NC}"
+echo "$private_keys" > "$WORKSPACE_DIR/privatekey.txt"
 
-# 6. 환경 변수 설정
-echo -e "${YELLOW}환경 변수를 설정합니다...${NC}"
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+# t1rn_tx.py 파일 생성
+cat << 'EOF' > "$WORKSPACE_DIR/t1rn_tx.py"
+from web3 import Web3
+import sys
 
-# 7. 프록시 목록 사용자 입력
-echo -e "${YELLOW}보유하신 모든 Proxy를 chatgpt에게 다음과 같은 형식으로 변환해달라고 하세요.${NC}"
-echo -e "${YELLOW}이러한 형태로 각 프록시를 한줄에 하나씩 입력하세요: http://username:password@proxy_host:port${NC}"
-echo -e "${YELLOW}프록시 입력 후 엔터를 두번 누르면 됩니다.${NC}"
+# Arbitrum Sepolia 노드에 연결
+w3 = Web3(Web3.HTTPProvider('https://sepolia.arbitrum.io/rpc'))
 
-base_port=5000
+# 연결 확인
+if not w3.isConnected():
+    raise Exception("Arbitrum Sepolia 노드에 연결할 수 없습니다.")
 
-# 프록시 목록을 proxy.txt 파일에 저장
-> proxy.txt # 파일 초기화
-while true; do
-    read -r proxy
-    if [ -z "$proxy" ]; then
-        break
-    fi
-    echo "$proxy" >> proxy.txt
-done
+# 계정 설정
+private_key = sys.argv[1]  # 명령행 인수로 개인 키 입력
+account = w3.eth.account.privateKeyToAccount(private_key)
 
-# 모든 프록시 처리
-for proxy in $(< proxy.txt); do
-    # 프록시가 비어있으면 넘어감
-    if [ -z "$proxy" ]; then
-        echo -e "${RED}프록시가 입력되지 않았습니다. 다음 프록시로 넘어갑니다.${NC}"
-        continue  
-    fi
+# 계약 주소 및 입력 데이터 정의
+contract_address = '0x8D86c3573928CE125f9b2df59918c383aa2B514D'
+input_data = '0x56591d59627373700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004CBB1421DF1CF362DC618d887056802d8adB7BC000000000000000000000000000000000000000000000000000005ae1a09d680e0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005af3107a4000'
 
-    # 각 데몬에 고유 작업 디렉토리 생성 및 포트 할당
-    repo_dir="/root/titan-edge-workspace/$current_port"
-    mkdir -p "$repo_dir"
+# 거래 파라미터 정의
+gas_limit = 2000000
+gas_price = w3.toWei('10', 'gwei')
+chain_id = 421614  # Arbitrum Sepolia 체인 ID
 
-    # 각 데몬에 고유 포트 할당
-    current_port=$((base_port++))
+# 계약에 거래를 보내는 함수
+def send_transaction(amount):
+    nonce = w3.eth.getTransactionCount(account.address)
+    transaction = {
+        'to': contract_address,
+        'data': input_data,
+        'value': w3.toWei(amount, 'ether'),
+        'gas': gas_limit,
+        'gasPrice': gas_price,
+        'nonce': nonce,
+        'chainId': chain_id
+    }
 
-    echo -e "${YELLOW}프록시: ${proxy}를 사용하여 포트 ${current_port}에서 데몬을 실행합니다...${NC}"
+    signed_txn = w3.eth.account.signTransaction(transaction, private_key)
+    txn_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
+    return txn_hash
+
+# 반복적으로 거래 전송
+num_transactions = 10  # 전송할 거래 수 변경
+amount_per_transaction = 0.0001  # ETH 단위의 금액
+
+for i in range(num_transactions):
+    txn_hash = send_transaction(amount_per_transaction)
+    print(f'거래 해시: {txn_hash.hex()}')
+EOF
+
+# 개인 키에 대해 t1rn_tx.py 실행
+IFS=',' read -r -a keys_array <<< "$private_keys"
+for index in "${!keys_array[@]}"; do
+    private_key="${keys_array[$index]}"
+    echo -e "${GREEN}현재 사용 중인 지갑: $(($index + 1))${NC}"
     
-    # 환경 변수로 프록시 설정
-    export http_proxy=$proxy
-    export https_proxy=$proxy
-    
-    echo -e "${YELLOW}프록시: ${proxy}를 사용하여 식별코드를 얻으세요:${NC}"
-    echo -e "${YELLOW}해당 사이트에 방문하여 식별코드를 얻으세요: ${NC}"
-    echo -e "${YELLOW}https://test1.titannet.io/newoverview/activationcodemanagement${NC}"
-    
-    # 사용자로부터 식별 코드 입력 받기
-    read -p "$(echo -e ${YELLOW}식별 코드를 입력하세요: ${NC})" identifier
-
-    # 9. 바인드 명령 실행
-    echo -e "${YELLOW}바인드 명령을 실행합니다...${NC}"
-    titan-edge bind --hash="$identifier" https://api-test1.container1.titannet.io/api/v2/device/binding
-    
-    # 10. 데몬 시작
-    echo -e "${YELLOW}titan-edge 데몬을 시작합니다...${NC}"
-    titan-edge daemon start --init --url https://cassini-locator.titannet.io:${current_port}/rpc/v0
-    sudo ufw allow ${current_port}/tcp
-    
-    # 환경 변수 해제
-    unset http_proxy https_proxy
+    # 스크립트 실행 (명령행 인수로 개인 키 전달)
+    python3 "$WORKSPACE_DIR/t1rn_tx.py" "$private_key"
 done
 
 echo -e "${GREEN}모든 작업이 완료되었습니다. 컨트롤+A+D로 스크린을 종료해주세요.${NC}"
