@@ -6,6 +6,8 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # 색상 초기화
 
+set -x  # 각 명령어가 실행되기 전에 출력
+
 # 작업 공간 디렉토리 설정
 WORKSPACE_DIR="/root/t1rntx"
 
