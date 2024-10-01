@@ -83,11 +83,11 @@ if not w3.is_connected():
 
 # 계정 설정
 private_key = sys.argv[1]  # 명령행 인수로 개인 키 입력
-account = w3.eth.account.privateKeyToAccount(private_key)
+account = w3.eth.account.from_key(private_key)  # 메서드 변경
 
 # 계약 주소 및 입력 데이터 정의
 contract_address = '0x8D86c3573928CE125f9b2df59918c383aa2B514D'
-input_data = '0x56591d59627373700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004CBB1421DF1CF362DC618d887056802d8adB7BC000000000000000000000000000000000000000000000000000005ae1a09d680e0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005af3107a4000'
+input_data = '0x56591d59627373700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004CBB1421DF1CF362DC618d887056802d8adB7BC000000000000000000000000000000000000000000000000000005ae1a09d680e0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005af3107a4000'
 
 # 거래 파라미터 정의
 gas_price = w3.toWei('10', 'gwei')
@@ -121,18 +121,18 @@ def send_transaction(amount):
     return txn_hash
 
 # 반복적으로 거래 전송
-try:
-    num_transactions = int(sys.argv[2])  # 명령행 인수로 거래 수 입력
-    amount_per_transaction = 0.0001  # ETH 단위의 금액
+num_transactions = int(sys.argv[2])  # 명령행 인수로 거래 수 입력
+amount_per_transaction = 0.0001  # ETH 단위의 금액
 
-    for i in range(num_transactions):
+for i in range(num_transactions):
+    try:
         start_time = time.time()  # 시작 시간 기록
         txn_hash = send_transaction(amount_per_transaction)
         elapsed_time = time.time() - start_time  # 경과 시간 계산
         print(f'거래 해시: {txn_hash.hex()} (소요 시간: {elapsed_time:.2f}초)')
-except Exception as e:
-    print(f'거래 전송 중 오류 발생: {e}')
-    sys.exit(1)  # 오류 발생 시 종료
+    except Exception as e:
+        print(f'거래 전송 중 오류 발생: {e}')
+        sys.exit(1)  # 오류 발생 시 종료
 EOF
 
 # 작업 공간으로 이동
