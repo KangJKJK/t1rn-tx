@@ -101,7 +101,7 @@ def send_transaction(amount):
     estimated_gas = w3.eth.estimateGas({
         'to': contract_address,
         'data': input_data,
-        'value': w3.toWei(amount, 'ether'),
+        'value': w3.to_wei(amount, 'ether'),
         'nonce': nonce,
         'chainId': chain_id
     })
@@ -109,7 +109,7 @@ def send_transaction(amount):
     transaction = {
         'to': contract_address,
         'data': input_data,
-        'value': w3.toWei(amount, 'ether'),
+        'value': w3.to_wei(amount, 'ether'),
         'gas': estimated_gas,
         'gasPrice': gas_price,
         'nonce': nonce,
