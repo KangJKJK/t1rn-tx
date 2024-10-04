@@ -105,7 +105,7 @@ def send_transaction(amount):
 
 # 반복적으로 거래 전송
 num_transactions = int(sys.argv[2])
-amount_per_transaction = 0.0001  # ETH 단위의 금액
+amount_per_transaction = 0.00001  # ETH 단위의 금액
 
 for i in range(num_transactions):
     try:
