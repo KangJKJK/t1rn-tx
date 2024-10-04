@@ -74,8 +74,8 @@ if not w3.is_connected():
     raise Exception("Arbitrum Sepolia 노드에 연결할 수 없습니다.")
 
 # 계정 설정
-private_key = sys.argv[1]  # 명령행 인수로 개인 키 입력
-account = w3.eth.account.from_key(private_key)  # 메서드 변경
+private_key = sys.argv[1]
+account = w3.eth.account.from_key(private_key)
 
 # 계약 주소 및 입력 데이터 정의
 contract_address = '0x8D86c3573928CE125f9b2df59918c383aa2B514D'
@@ -87,7 +87,8 @@ chain_id = 421614  # Arbitrum Sepolia 체인 ID
 
 # 계약에 거래를 보내는 함수
 def send_transaction(amount):
-    nonce = w3.eth.getTransactionCount(account.address)
+    nonce = w3.eth.get_transaction_count(account.address)
+    estimated_gas = 21000  # 기본 가스 한도 설정
     transaction = {
         'to': contract_address,
         'data': input_data,
@@ -98,23 +99,23 @@ def send_transaction(amount):
         'chainId': chain_id
     }
 
-    signed_txn = w3.eth.account.signTransaction(transaction, private_key)
-    txn_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
+    signed_txn = w3.eth.account.sign_transaction(transaction, private_key)
+    txn_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
     return txn_hash
 
 # 반복적으로 거래 전송
-num_transactions = int(sys.argv[2])  # 명령행 인수로 거래 수 입력
+num_transactions = int(sys.argv[2])
 amount_per_transaction = 0.0001  # ETH 단위의 금액
 
 for i in range(num_transactions):
     try:
-        start_time = time.time()  # 시작 시간 기록
+        start_time = time.time()
         txn_hash = send_transaction(amount_per_transaction)
-        elapsed_time = time.time() - start_time  # 경과 시간 계산
+        elapsed_time = time.time() - start_time
         print(f'거래 해시: {txn_hash.hex()} (소요 시간: {elapsed_time:.2f}초)')
     except Exception as e:
         print(f'거래 전송 중 오류 발생: {e}')
-        sys.exit(1)  # 오류 발생 시 종료
+        sys.exit(1)
 EOF
 
 # 작업 공간으로 이동
@@ -134,7 +135,6 @@ for index in "${!keys_array[@]}"; do
         echo -e "${RED}트랜잭션 전송 중 오류 발생. 개인 키: $private_key${NC}"
     fi
 done
-
 
 echo -e "${GREEN}모든 작업이 완료되었습니다. 컨트롤+A+D로 스크린을 종료해주세요.${NC}"
 echo -e "${GREEN}스크립트 작성자: https://t.me/kjkresearch${NC}"
