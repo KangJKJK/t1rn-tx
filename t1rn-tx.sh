@@ -25,27 +25,21 @@ mkdir -p "$WORKSPACE_DIR"
 echo -e "${GREEN}필요한 패키지를 requirements.txt에 저장합니다...${NC}"
 echo "web3" > "$WORKSPACE_DIR/requirements.txt"
 
-# Python과 pip 설치 확인
-if ! command -v python3 &> /dev/null; then
-    echo -e "${RED}Python이 설치되어 있지 않습니다. 설치 후 다시 시도하세요.${NC}"
-    exit 1
-fi
-
-if ! command -v pip &> /dev/null; then
-    echo -e "${RED}pip가 설치되어 있지 않습니다. 설치 후 다시 시도하세요.${NC}"
-    exit 1
-fi
-
-# Python과 pip 설치 확인 및 설치
+# Python 설치 확인 및 설치
 if ! command -v python3 &> /dev/null; then
     echo -e "${RED}Python이 설치되어 있지 않습니다. 설치합니다...${NC}"
-    apt-get update
-    apt-get install -y python3
+    sudo apt-get update
+    sudo apt-get install -y python3
+else
+    echo -e "${GREEN}Python이 이미 설치되어 있습니다.${NC}"
 fi
 
+# pip 설치 확인 및 설치
 if ! command -v pip &> /dev/null; then
     echo -e "${RED}pip가 설치되어 있지 않습니다. 설치합니다...${NC}"
-    apt-get install -y python3-pip
+    sudo apt-get install -y python3-pip
+else
+    echo -e "${GREEN}pip가 이미 설치되어 있습니다.${NC}"
 fi
 
 # 필요한 패키지 설치
