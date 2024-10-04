@@ -100,7 +100,7 @@ def send_transaction(amount):
     }
 
     signed_txn = w3.eth.account.sign_transaction(transaction, private_key)
-    txn_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction.hex()) 
+    txn_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction) 
     return txn_hash
 
 # 반복적으로 거래 전송
